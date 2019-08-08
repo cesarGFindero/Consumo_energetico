@@ -2,19 +2,10 @@
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime
 import pdb
 import os
-
 from sklearn.metrics import auc
 
-def leer(filename):
-    df = pd.read_csv(filename)
-    return df
-
-def area(x,y):
-    return auc(x,y) 
 
 def calcular_consumo(cliente,mes):  
     
@@ -23,78 +14,63 @@ def calcular_consumo(cliente,mes):
     finderos = os.listdir(carpeta)
     finderos = [item for item in finderos if '.CSV' in item[-4:] or '.csv' in item[-4:]]
     
-    resultados = dict()
+    consumos = dict()
     inicios = []
     finales = []
     periodos = []
     
-    for fin in finderos:
-        archivo  = fin
+    for archivo in finderos:
         
-        filename = carpeta +'/'+ archivo
+        filename = f'{carpeta}/{archivo}'
         
-        df = leer(filename)
-        if '00' in archivo:
-            df['Datetime'] = df['Date']+' '+df['Time']
-        else:
-            df['Datetime'] = df['Date']+df['Time']
-            
+        df = pd.read_csv(filename)
+                 
         
         inicial = 0
         final = -1
-        inicio_fin = df.iloc[[inicial, final]]
+        inicio_fin = df.iloc[[inicial, final]][['Date','Time']]
         inicio_fin.reset_index(drop=True, inplace = True)
-#        pdb.set_trace()
+        pdb.set_trace()
+        inicio_fin['Datetime'] = inicio_fin['Date']+inicio_fin['Time']
+        
         inicio = pd.to_datetime(inicio_fin['Datetime'][0] , format = formato_fecha+' %H:%M:%S')
         final = pd.to_datetime(inicio_fin['Datetime'][1] , format = formato_fecha+' %H:%M:%S')
+       
         duracion = final - inicio
+        duracion = duracion.total_seconds()
         
         mediciones = df.shape[0]
         
         try:
-            tiempo_muestreo = df['Milis'].diff()[df['Milis'].diff()>0].mean()/1000
-        
+            tiempo_muestreo = df['Milis'].diff()[df['Milis'].diff()>0].mean()/1000    
         except:
-            continue
+            tiempo_muestreo = duracion/mediciones
         
-#        segundos = duracion.total_seconds() 
-#        frecuencia_muestreo = mediciones/segundos
-#        tiempo_muestreo = 1/frecuencia_muestreo
 
         segundos = mediciones*tiempo_muestreo
         
-        horas=round(segundos/3600,2)
+        horas = round(segundos/3600,2)
 
-#        columna_segundos = np.arange(0,segundos,tiempo_muestreo)
-        columna_segundos = np.arange(0,segundos,tiempo_muestreo)
-
-#        pdb.set_trace()
+        arreglo_segundos = np.linspace(0,segundos,mediciones)
         
-#        try:
-#            df["Segundos"] = columna_segundos
-#        except:
-#            df["Segundos"] = columna_segundos[:-1]
-        
-        contador = 0
-        cargas_findero = np.ones(12)
-        
+        cargas_puertos = []
         for column in df:
             
-            if 'Date' in column or 'Time' in column or 'Segundos' in column or 'Milis' in column:
+            if 'Date' in column or 'Time' in column or 'Milis' in column:
                 continue
             
-#            xx=df["Segundos"].values
-            xx = columna_segundos
-            yy = df[column].values
+            tiempo = arreglo_segundos
+            potencia = df[column].values
             
-            a = area(xx,yy) #en Joules
             
-            kWh = round(a/3600000,2)
+            area_curva = auc(tiempo,potencia)
+            
+            kWh = round(area_curva/3600000,1)
                                            
-            cargas_findero[contador] = round(kWh,1)
-            contador += 1
+            cargas_puertos.append(kWh)
+
         
-        resultados[fin] = cargas_findero
+        consumos[archivo] = cargas_puertos
         
         fecha_inicio = str(inicio)[:-9]
         fecha_fin = str(final)[:-9]
@@ -103,12 +79,12 @@ def calcular_consumo(cliente,mes):
         finales.append(fecha_fin)
         periodos.append(horas)
         
-    return resultados,horas,fecha_inicio,fecha_fin,inicios,finales,periodos
+    return consumos,horas,fecha_inicio,fecha_fin,inicios,finales,periodos
         
 
   
 if __name__=='__main__':
-    cliente = '11 Gonzalo Celorio'
+    cliente = '29 Diego Medina'
     mes='07 Julio'
 
     resultados,horas,fecha_inicio,fecha_fin,inicios,finales,periodos = calcular_consumo(cliente,mes)

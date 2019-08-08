@@ -119,7 +119,7 @@ def detalles(datos,horas,precio,inicio,final,cliente,mes,nombre,workbook,incios,
             
             celda_consumo = xl_rowcol_to_cell(fila_primer_findero+4+indice*espacio_vertical,0+indice_*espacio_horizontal)
             celda_total = xl_rowcol_to_cell(2+fila_primer_findero+len(list(datos.keys()))*espacio_vertical,1+columna_nombre_finderos)
-#            pdb.set_trace()
+
             worksheet.write_formula(fila_primer_findero+4+indice*espacio_vertical,2+indice_*espacio_horizontal,'='+celda_consumo+'/$'+celda_total[0]+'$'+celda_total[1:],porcentaje)
             
             worksheet.conditional_format(fila_primer_findero+4+indice*espacio_vertical,2+indice_*espacio_horizontal,

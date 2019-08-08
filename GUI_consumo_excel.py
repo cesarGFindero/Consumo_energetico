@@ -63,16 +63,16 @@ class Cuerpo(tk.Frame):
         self.label_cliente = tk.Label(self, text = 'Cliente:')
         self.label_cliente.grid(row=4, column=1, padx=20, pady=20, sticky=tk.E)
 
-        self.tk_mes = tk.StringVar()
-        self.tk_mes.set(self.meses_lista[datetime.now().month])        
-        self.meses = {m for m in os.listdir(self.carpeta_in) if m in self.meses_lista.values()}
+        self.tk_mes = tk.StringVar()        
+        self.meses = [m for m in os.listdir(self.carpeta_in) if m in self.meses_lista.values()]
+        self.tk_mes.set(self.meses[-1])
         
         self.mes_desplegable = tk.OptionMenu(self, self.tk_mes, *self.meses)
         self.mes_desplegable.config(width=20)
         self.mes_desplegable.grid(row=3,column=2)
         
         self.tk_cliente = tk.StringVar()        
-        self.clientes = os.listdir(self.carpeta_in+'/'+ self.tk_mes.get())
+        self.clientes = os.listdir(f'{self.carpeta_in}/{self.tk_mes.get()}')
         self.tk_cliente.set(self.clientes[-1])
         self.tk_mes.trace('w',self.update)
         
@@ -94,12 +94,13 @@ class Cuerpo(tk.Frame):
         
             
     def enviar(self):
-        self.finderos = [item for item in os.listdir(self.carpeta_in+'/'+ self.tk_mes.get()+'/'+self.tk_cliente.get()+'/Datos') if '.CSV' in item[-4:] or '.csv' in item[-4:]]
-
-        self.diccionario, self.horas, self.inicio, self.final, self.inicios, self.finales, self.periodos = cons.calcular_consumo(self.tk_cliente.get(), self.tk_mes.get())
         self.precio = 5.626
         
-        ex.excel(self.diccionario, self.horas, self.precio, self.inicio, self.final, self.tk_cliente.get(), self.tk_mes.get(), self.inicios, self.finales,self.periodos)
+        self.finderos = [item for item in os.listdir(f'{self.carpeta_in}/{self.tk_mes.get()}/{self.tk_cliente.get()}/Datos') if '.CSV' in item[-4:] or '.csv' in item[-4:]]
+
+        self.consumos, self.horas, self.inicio, self.final, self.inicios, self.finales, self.periodos = cons.calcular_consumo(self.tk_cliente.get(), self.tk_mes.get())
+
+        ex.excel(self.consumos, self.horas, self.precio, self.inicio, self.final, self.tk_cliente.get(), self.tk_mes.get(), self.inicios, self.finales,self.periodos)
         
         print()
         print(f'Se terminó de calcular el consumo de {self.tk_cliente.get()[3:]}')
