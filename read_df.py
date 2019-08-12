@@ -20,7 +20,7 @@ def lector(mes, cliente, archivo, puerto, condicion=None):
 if __name__ == '__main__':
     mes = '07 Julio'
     cliente = '11 Gonzalo Celorio'
-    archivo = 'DATALOG_F13_Celorio.CSV'
+    archivo = 'DATALOG_B10.CSV'
     condicion = [200,270]
     puerto = 4
     

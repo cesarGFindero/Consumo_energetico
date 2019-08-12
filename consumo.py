@@ -30,7 +30,7 @@ def calcular_consumo(cliente,mes):
         final = -1
         inicio_fin = df.iloc[[inicial, final]][['Date','Time']]
         inicio_fin.reset_index(drop=True, inplace = True)
-        pdb.set_trace()
+#        pdb.set_trace()
         inicio_fin['Datetime'] = inicio_fin['Date']+inicio_fin['Time']
         
         inicio = pd.to_datetime(inicio_fin['Datetime'][0] , format = formato_fecha+' %H:%M:%S')
